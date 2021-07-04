@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Document</title>
+
+	<link rel="stylesheet" href="lib/css/fontawesome-4.2.0.min.css" />
+	<link rel="stylesheet" href="lib/css/fontawesome-5.14.0.all.min.css" />
+</head>
+
+<style>
+body{
+	position: fixed;
+	width: 100vw;
+	height: 100vh;
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+}
+</style>
+
+<body>
+
+<script>
+function render_element(styles, el) {
+  for (const [kk, vv] of Object.entries(styles)) {
+    el.style[kk] = vv;
+  }
+}
+
+class CheckboxNormal{
+	constructor(
+		content,
+		width_px,
+		height_px,
+		fontSize,
+		color,
+		clicked=false,
+	){
+		this.content = content;
+		this.width_px = width_px;
+		this.height_px = height_px;
+		this.fontSize = fontSize;
+		this.color = color;
+		this.clicked = clicked;
+
+		this.el = document.createElement('div');
+		render_element({
+			width: this.width_px.toString() + 'px',
+			height: this.height_px.toString() + 'px',
+			display: 'flex',
+			flexDirection: 'row',
+		}, this.el);
+
+		this.label_el = document.createElement('div');
+		render_element({
+			width: (this.width_px - this.height_px).toString() + 'px',
+			height: this.height_px.toString() + 'px',
+			fontSize: this.fontSize, 
+			display: 'flex',
+			justifyContent: 'center',
+			alignItems: 'center',
+		}, this.label_el);
+		this.label_el.innerHTML = content;
+		this.el.appendChild(this.label_el);
+
+		this.box_el = document.createElement('div');
+		render_element({
+			width: this.height_px.toString() + 'px',
+			height: this.height_px.toString() + 'px',
+			display: 'flex',
+			justifyContent: 'center',
+			alignItems: 'center',
+			fontSize: (this.height_px * 0.9).toString() + 'px',
+		}, this.box_el);
+		this.box_el.innerHTML = '<i class="fas fa-check-circle"></i>';
+		this.el.appendChild(this.box_el);
+		
+		this.svg_el = this.box_el.querySelector('i');
+		this.svg_el.style.cursor = 'pointer';
+		this.mouseenter = this.mouseenter.bind(this);
+		this.mouseleave = this.mouseleave.bind(this);
+		this.click = this.click.bind(this);
+		this.svg_el.addEventListener('mouseenter', this.mouseenter);
+		this.svg_el.addEventListener('mouseleave', this.mouseleave);
+		this.svg_el.addEventListener('click', this.click);
+
+		this.becomeChildOf = this.becomeChildOf.bind(this);
+	}
+
+	mouseenter(){
+		if(this.clicked)return;
+		this.svg_el.style.color = this.color;
+	}
+
+	mouseleave(){
+		if(this.clicked)return;
+		this.svg_el.style.color = 'black';
+	}
+
+	click(){
+		this.clicked = !this.clicked;
+		if(this.clicked){
+			this.svg_el.style.color = this.color;
+			this.label_el.style.color = this.color;
+		}else{
+			this.svg_el.style.color = 'black';
+			this.label_el.style.color = 'black';
+		}	
+	}
+
+	becomeChildOf(parent_el){
+		this.parent_el = parent_el;
+		this.parent_el.appendChild(this.el);
+	}
+}
+
+new CheckboxNormal(
+	'autofill',
+	150, 
+	50,
+	'2em',
+	'red',
+).becomeChildOf(document.body);
+
+</script>
+
+</body>
+</html>

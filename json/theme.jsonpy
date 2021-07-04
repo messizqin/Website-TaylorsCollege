@@ -1,0 +1,37 @@
+{
+	"course": {
+		"USFP English A": {
+			"r": 255,
+			"g": 0,
+			"b": 0,
+		},
+		"USFP Mathematics for Science A": {
+			"r": 30,
+			"g": 90,
+			"b": 60,
+		},
+		"USFP Physics A: Motion in our World": {
+			"r": 75,
+			"g": 125,
+			"b": 240,
+		},
+		"USFP IT A: Software for Business": {
+			"r": 255,
+			"g": 255,
+			"b": 255,
+		},
+		"USFP Economics A: Micro Economics": {
+			"r": 250,
+			"g": 250,
+			"b": 40,
+		},
+	},
+
+	"timetable": {
+		"hruler": ["gray", "red"],
+		"vruler": ["gray", "blue"],
+		"hstripe": "magenta",
+		"vstripe": "cyan",
+		"timer": "darkgray",
+	},
+}

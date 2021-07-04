@@ -1,0 +1,9 @@
+section{
+	width: 400px;
+	height: 300px;
+	border: 1px solid;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
