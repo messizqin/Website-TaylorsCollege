@@ -10,4 +10,4 @@
 
 Instruction:
 
-* parse a json file ![db/calendar.json](db/calendar.json)
+* parse a json file [db/calendar.json](db/calendar.json)
