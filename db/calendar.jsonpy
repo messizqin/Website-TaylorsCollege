@@ -1,11 +1,12 @@
 {
 	"mon": [
 		{
-			"start": "12:00",
-			"finish": "13:00",
+			"start": "11:00",
+			"finish": "12:00",
 			"name": "USFP English A",
 			"course": "21.SEA4/5",
 			"teacher": "Freda Pappas",
+			"zoomlink": "https://studygroup.zoom.us/j/91240926328?pwd=QkdBcFdCUEJXSzJWQXdKd1pSQWVsQT09",
 		},
 		{
 			"start": "13:00",
@@ -13,6 +14,7 @@
 			"name": "USFP Mathematics for Science A",
 			"course": "21.SMSA6",
 			"teacher": "Colin Baker",
+			"zoomlink": "https://studygroup.zoom.us/j/94760481101?pwd=SVhsUnVoTFpUYjJhOE4rSnNVM3MvUT09",
 		},
 		{
 			"start": "14:00",
@@ -20,6 +22,7 @@
 			"name": "USFP Physics A: Motion in our World",
 			"course": "21.SPHA7",
 			"teacher": "Ross Flanagan",
+			"zoomlink": "https://studygroup.zoom.us/j/91347804440?pwd=YytFV2w4czltTFVhYzArWjN4Q1FwUT09",
 		},
 		{
 			"start": "16:00",
@@ -27,6 +30,7 @@
 			"name": "USFP IT A: Software for Business",
 			"course": "21.SITA3/9",
 			"teacher": "Robert Morten",
+			"zoomlink": "https://studygroup.zoom.us/j/91711674632?pwd=WVRlc1lpaS9aQ3c0dnhrOXJzRFFCUT09",
 		},
 		{
 			"start": "17:00",
@@ -34,6 +38,7 @@
 			"name": "USFP Economics A: Micro Economics",
 			"course": "21.SEC1/10",
 			"teacher": "Jawei Zhu",
+			"zoomlink": "https://studygroup.zoom.us/j/91711674632?pwd=WVRlc1lpaS9aQ3c0dnhrOXJzRFFCUT09",
 		},
 	],
 	"tue": [
@@ -43,6 +48,7 @@
 			"name": "USFP English A",
 			"course": "21.SEA4/5",
 			"teacher": "Freda Pappas",
+			"zoomlink": "https://studygroup.zoom.us/j/91711674632?pwd=WVRlc1lpaS9aQ3c0dnhrOXJzRFFCUT09",
 		},
 		{
 			"start": "13:00",
@@ -50,6 +56,7 @@
 			"name": "USFP Mathematics for Science A",
 			"course": "21.SMSA6",
 			"teacher": "Colin Baker",
+			"zoomlink": "https://studygroup.zoom.us/j/91711674632?pwd=WVRlc1lpaS9aQ3c0dnhrOXJzRFFCUT09",
 		},
 		{
 			"start": "14:00",
@@ -57,6 +64,7 @@
 			"name": "USFP Physics A: Motion in our World",
 			"course": "21.SPHA7",
 			"teacher": "Ross Flanagan",
+			"zoomlink": "https://studygroup.zoom.us/j/91711674632?pwd=WVRlc1lpaS9aQ3c0dnhrOXJzRFFCUT09",
 		},
 		{
 			"start": "16:00",
@@ -64,6 +72,7 @@
 			"name": "USFP IT A: Software for Business",
 			"course": "21.SITA3/9",
 			"teacher": "Robert Morten",
+			"zoomlink": "https://studygroup.zoom.us/j/91711674632?pwd=WVRlc1lpaS9aQ3c0dnhrOXJzRFFCUT09",
 		},
 		{
 			"start": "17:00",
@@ -71,6 +80,7 @@
 			"name": "USFP Economics A: Micro Economics",
 			"course": "21.SEC1/10",
 			"teacher": "Jawei Zhu",
+			"zoomlink": "https://studygroup.zoom.us/j/91711674632?pwd=WVRlc1lpaS9aQ3c0dnhrOXJzRFFCUT09",
 		},
 	],
 	"wed": [
@@ -80,6 +90,7 @@
 			"name": "USFP English A",
 			"course": "21.SEA4/5",
 			"teacher": "Freda Pappas",
+			"zoomlink": "https://studygroup.zoom.us/j/91711674632?pwd=WVRlc1lpaS9aQ3c0dnhrOXJzRFFCUT09",
 		},
 		{
 			"start": "12:45",
@@ -87,6 +98,7 @@
 			"name": "USFP Mathematics for Science A",
 			"course": "21.SMSA6",
 			"teacher": "Colin Baker",
+			"zoomlink": "https://studygroup.zoom.us/j/91711674632?pwd=WVRlc1lpaS9aQ3c0dnhrOXJzRFFCUT09",
 		},
 		{
 			"start": "13:30",
@@ -94,6 +106,7 @@
 			"name": "USFP Physics A: Motion in our World",
 			"course": "21.SPHA7",
 			"teacher": "Ross Flanagan",
+			"zoomlink": "https://studygroup.zoom.us/j/91711674632?pwd=WVRlc1lpaS9aQ3c0dnhrOXJzRFFCUT09",
 		},
 		{
 			"start": "15:00",
@@ -101,6 +114,7 @@
 			"name": "USFP IT A: Software for Business",
 			"course": "21.SITA3/9",
 			"teacher": "Robert Morten",
+			"zoomlink": "https://studygroup.zoom.us/j/91711674632?pwd=WVRlc1lpaS9aQ3c0dnhrOXJzRFFCUT09",
 		},
 		{
 			"start": "15:45",
@@ -108,6 +122,7 @@
 			"name": "USFP Economics A: Micro Economics",
 			"course": "21.SECA1/10",
 			"teacher": "Jiawei Zhu",
+			"zoomlink": "https://studygroup.zoom.us/j/91711674632?pwd=WVRlc1lpaS9aQ3c0dnhrOXJzRFFCUT09",
 		},
 	],
 	"thu": [
@@ -117,6 +132,7 @@
 			"name": "USFP English A",
 			"course": "21.SEA4/5",
 			"teacher": "Freda Pappas",
+			"zoomlink": "https://studygroup.zoom.us/j/91711674632?pwd=WVRlc1lpaS9aQ3c0dnhrOXJzRFFCUT09",
 		},
 		{
 			"start": "13:00",
@@ -124,6 +140,7 @@
 			"name": "USFP Mathematics for Science A",
 			"course": "21.SMSA6",
 			"teacher": "Colin Baker",
+			"zoomlink": "https://studygroup.zoom.us/j/91711674632?pwd=WVRlc1lpaS9aQ3c0dnhrOXJzRFFCUT09",
 		},
 		{
 			"start": "14:00",
@@ -131,6 +148,7 @@
 			"name": "USFP Physics A: Motion in our World",
 			"course": "21.SPHA7",
 			"teacher": "Ross Flanagan",
+			"zoomlink": "https://studygroup.zoom.us/j/91711674632?pwd=WVRlc1lpaS9aQ3c0dnhrOXJzRFFCUT09",
 		},
 		{
 			"start": "16:00",
@@ -138,6 +156,7 @@
 			"name": "USFP IT A: Software for Business",
 			"course": "21.SITA3/9",
 			"teacher": "Robert Morten",
+			"zoomlink": "https://studygroup.zoom.us/j/91711674632?pwd=WVRlc1lpaS9aQ3c0dnhrOXJzRFFCUT09",
 		},
 		{
 			"start": "17:00",
@@ -145,6 +164,7 @@
 			"name": "USFP Economics A: Micro Economics",
 			"course": "21.SEC1/10",
 			"teacher": "Jawei Zhu",
+			"zoomlink": "https://studygroup.zoom.us/j/91711674632?pwd=WVRlc1lpaS9aQ3c0dnhrOXJzRFFCUT09",
 		},
 	],
 	"fri": [
@@ -154,6 +174,7 @@
 			"name": "USFP English A",
 			"course": "21.SEA4/5",
 			"teacher": "Freda Pappas",
+			"zoomlink": "https://studygroup.zoom.us/j/91711674632?pwd=WVRlc1lpaS9aQ3c0dnhrOXJzRFFCUT09",
 		},
 		{
 			"start": "13:00",
@@ -161,6 +182,7 @@
 			"name": "USFP Mathematics for Science A",
 			"course": "21.SMSA6",
 			"teacher": "Colin Baker",
+			"zoomlink": "https://studygroup.zoom.us/j/91711674632?pwd=WVRlc1lpaS9aQ3c0dnhrOXJzRFFCUT09",
 		},
 		{
 			"start": "14:00",
@@ -168,6 +190,7 @@
 			"name": "USFP Physics A: Motion in our World",
 			"course": "21.SPHA7",
 			"teacher": "Ross Flanagan",
+			"zoomlink": "https://studygroup.zoom.us/j/91711674632?pwd=WVRlc1lpaS9aQ3c0dnhrOXJzRFFCUT09",
 		},
 		{
 			"start": "16:00",
@@ -175,6 +198,7 @@
 			"name": "USFP IT A: Software for Business",
 			"course": "21.SITA3/9",
 			"teacher": "Robert Morten",
+			"zoomlink": "https://studygroup.zoom.us/j/91711674632?pwd=WVRlc1lpaS9aQ3c0dnhrOXJzRFFCUT09",
 		},
 		{
 			"start": "17:00",
@@ -182,6 +206,7 @@
 			"name": "USFP Economics A: Micro Economics",
 			"course": "21.SEC1/10",
 			"teacher": "Jawei Zhu",
+			"zoomlink": "https://studygroup.zoom.us/j/91711674632?pwd=WVRlc1lpaS9aQ3c0dnhrOXJzRFFCUT09",
 		},
 	],
 }

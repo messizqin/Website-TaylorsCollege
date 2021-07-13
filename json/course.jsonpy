@@ -1,63 +1,22 @@
 {
 	"USFP English A": {
-		"teachers": [
-			"Christopher Douglas",
-			"Josef Dabbs",
-			"Kim Rennie",
-			"Peter Gyulay",
-			"Sarah Hansen",
-			"Shannon Hutchinson",
-			"Jennie Masia",
-			"Freda Pappas",
-			"Collin Chan",
-		],
+		"id": "3704",
 		"img": "english.jpeg",
 	}, 
 	"USFP Mathematics for Science A": {
-		"teachers": [
-			"Angela Xu",
-			"Barry Zhang",
-			"Claudia Sandler",
-			"Collin Baker",
-			"Daniel Guo",
-			"Derek Buchanan",
-			"Ebrahim Goolam",
-			"Mona Peters",
-			"Peter Molloy",
-		], 
+		"id": "3704",
 		"img": "math.jpeg",
 	}, 
 	"USFP Physics A: Motion in our World": {
-		"teachers": [
-			"Eric Baker",
-			"Ian Copper",
-			"Ross Flanagan",
-			"Wenting Ma", 
-		],
+		"id": "3704",
 		"img": "physics.jpg"
 	},
 	"USFP IT A: Software for Business": {
-		"teachers": [
-			"Millan Lasic",
-			"Robert Morten",
-			"Tim",
-			"Phil",
-		],
+		"id": "3704",
 		"img": "it.jpg",
 	},
 	"USFP Economics A: Micro Economics": {
-		"teachers": [
-			"Jiawei Zhu",
-			"Mark Crotty",
-			"Michael Kornhaber",
-			"Michael O'Neill",
-			"Phillip Klinger",
-			"Ros Saunders",
-			"Sock Hong Tan",
-			"Sonu Sarda",
-			"Susanna Skien",
-			"Vince McPherson",
-		], 
+		"id": "3704",
 		"img": "economics.jpg",
 	}
 }

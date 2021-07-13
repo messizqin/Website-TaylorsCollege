@@ -53,6 +53,22 @@ const sydTime = function() {
   return moment().tz("Australia/Sydney").format('HH:mm')
 };
 
+function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function getRandomLightColor() {
+  return Array.from({length: 3}, ii=>Math.floor(getRandomInt(130, 240)));
+}
+
+function getRandomDarkColor() {
+  let res = Array.from({length: 3}, ii=>Math.floor(getRandomInt(10, 120)));
+  res[getRandomInt(0, 2)] = getRandomInt(150, 255);
+  return res;
+}
+
 function validateInput(input_el) {
   // return false if input is none or whitespace
   var val = input_el.value;
@@ -108,6 +124,52 @@ class RGBA{
   }
 }
 
+/*
+ *
+ *
+ * /application/
+ * theme
+ * support root, return same color with same key
+ *
+ *
+ */
+
+class Color{
+  constructor(){
+    this.color = {};
+    this.get = this.get.bind(this);
+  }
+
+  get(key){
+    if(this.color[key]){
+      return this.color[key];
+    }else{
+      this.color[key] = getRandomDarkColor();
+      return this.color[key];
+    }
+  }
+}
+
+class Theme{
+  constructor(){
+    // singleton
+    // a collecion of instances
+    if(Theme._instance)return Theme._instance;
+    this.color = {};
+    this.get = this.get.bind(this);
+    Theme._instance = this;
+  }
+
+  get(key1, key2){
+    if(this.color[key1]){
+      return this.color[key1].get(key2);
+    }else{
+      this.color[key1] = new Color();
+      return this.color[key1].get(key2);
+    }
+  }
+}
+
 var paragraphs = [
   'Getting tired of joining lessons by looking across the timetable?',
   'We provide you with a digital timetable with all the links to your lessons!',
@@ -122,18 +184,19 @@ const nav_bar = document.querySelector('#navigate');
 const [
   nav,
   nav_sch,
-  nav_git,
   nav_info,
-  nav_tb,
-  nav_form
 ] = nav_bar.querySelectorAll('.nav');
 const navs = [
   nav_sch,
-  nav_git,
   nav_info,
-  nav_tb,
-  nav_form
 ];
+nav_sch.addEventListener('click', ()=>{window.open('https://www.taylorscollege.edu.au')});
+nav_info.addEventListener('click', ()=>{
+  new Info().addInfo(
+    'message',
+    'For each subject: <br /><b>click</b> to go to <b>zoom</b><br /><b>double click</b> to go to <b>course</b>',
+  );
+});
 const info_card = document.querySelector('#info-card');
 const info_card_left = document.querySelector('#info-card-left');
 const info_card_right = document.querySelector('#info-card-right');
@@ -201,6 +264,233 @@ function loader_dismiss() {
   setTimeout(() => {
     loader.style.display = 'none'
   }, 1000);
+}
+
+
+
+// info
+// message
+class InfoPiece{
+  constructor(
+    bg, 
+    color,
+    fontSize,
+    width_percent,
+    padding, 
+    borderRadius,
+    marginBottom,
+    timeOut,
+    content,
+    clickCallback,
+  ){
+    this.bg = bg;
+    this.color = color;
+    this.fontSize = fontSize;
+    this.width_percent = width_percent;
+    this.padding = padding;
+    this.borderRadius = borderRadius;
+    this.marginBottom = marginBottom;
+    this.timeOut = timeOut;
+    this.content = content;
+    this.clickCallback = clickCallback;
+
+    [
+      this.el,
+      this.text_wrapper,
+      this.btn_wrapper,
+    ] = Array.from({length: 3}, ii=>document.createElement('div'));
+    this.el.appendChild(this.text_wrapper);
+    this.el.appendChild(this.btn_wrapper);
+    render_element({
+      color: this.color,
+      padding: this.padding,
+      fontSize: this.fontSize,
+      marginBottom: this.marginBottom,
+      left: (50 - this.width_percent / 2).toString() + '%',
+      width: this.width_percent.toString() + "%",
+      background: this.bg,
+      zIndex: '10000000000',
+      borderRadius: this.borderRadius,
+      display: 'none',
+      flexDirection: 'row',
+      alignItems: 'center',
+      opacity: '0',
+      transition: 'opacity 500ms ease-out',
+    }, this.el);
+    render_element({
+      width: `calc(100% - ${this.fontSize})`,
+    }, this.text_wrapper);
+    this.text_wrapper.innerHTML = this.content;
+    render_element({
+      width: this.fontSize,
+      height: this.fontSize,
+      fontSize: this.fontSize,
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+    }, this.btn_wrapper);
+    this.btn_wrapper.innerHTML = '<i class="fas fa-times-circle"></i>';
+    this.dismiss_btn = this.btn_wrapper.querySelector('i');
+    this.dismiss_btn.style.cursor = 'pointer';
+
+    this.fade_in = this.fade_in.bind(this);
+    this.fade_out = this.fade_out.bind(this);
+
+    this.btn_mouseenter = this.btn_mouseenter.bind(this);
+    this.btn_mouseleave = this.btn_mouseleave.bind(this);
+    this.btn_click = this.btn_click.bind(this);
+    this.dismiss_btn.addEventListener('mouseenter', this.btn_mouseenter);
+    this.dismiss_btn.addEventListener('mouseleave', this.btn_mouseleave);
+    this.dismiss_btn.addEventListener('click', this.btn_click);
+
+    this.mouseenter = this.mouseenter.bind(this);
+    this.mouseleave = this.mouseleave.bind(this);
+    this.el.addEventListener('click', function(){this.clickCallback();this.btn_click()}.bind(this));
+    this.el.addEventListener('mouseenter', this.mouseenter);
+    this.el.addEventListener('mouseleave', this.mouseleave);
+
+    this.becomeChildOf = this.becomeChildOf.bind(this);
+    this.removeChildFrom = this.removeChildFrom.bind(this);
+    
+    this.fade_in();
+    this.hovered = false;
+  }
+
+  fade_in(){
+    this.el.style.display = 'flex';
+    setTimeout(()=>{
+      this.el.style.opacity = '1';
+    }, 0);
+  }
+
+  fade_out(){
+    this.el.style.opacity = '0';
+    setTimeout(()=>{
+      this.el.style.display = 'none';
+    }, 350);
+  }
+
+  btn_mouseenter(){
+    this.dismiss_btn.style.color = 'black';
+  }
+
+  btn_mouseleave(){
+    this.dismiss_btn.style.color = 'white';
+  }
+
+  btn_click(){
+    this.fade_out();
+  }
+
+  mouseenter(){
+    this.hovered = true;
+    this.el.style.opacity = '0.75';
+  }
+
+  mouseleave(){
+    this.el.style.opacity = '1';
+  }
+
+  becomeChildOf(parent_el){
+    this.parent_el = parent_el;
+    this.parent_el.appendChild(this.el);
+
+    setTimeout(()=>{
+      if(!this.hovered)new Info().removeInfo(this);
+    }, this.timeOut);
+  }
+
+  removeChildFrom(){
+    this.parent_el.removeChild(this.el);
+    this.parent_el = null;
+  }
+}
+
+var info_config = {
+  fontSize: '1.5em',
+  width_percent: 100,
+  padding: '10px',
+  borderRadius: '15px',
+  marginBottom: '15px',
+  timeOut: 5000,
+};
+
+class InfoWarn extends InfoPiece{
+  constructor(content, click){
+    super("orange", "white", info_config.fontSize, info_config.width_percent, info_config.padding, info_config.borderRadius, info_config.marginBottom, info_config.timeOut, content, click);
+  }
+}
+
+class InfoError extends InfoPiece{
+  constructor(content, click){
+    super("pink", "black", info_config.fontSize, info_config.width_percent, info_config.padding, info_config.borderRadius, info_config.marginBottom, info_config.timeOut, content, click);
+  }
+}
+
+class InfoMessage extends InfoPiece{
+  constructor(content, click){
+    super("skyblue", "black", info_config.fontSize, info_config.width_percent, info_config.padding, info_config.borderRadius, info_config.marginBottom, info_config.timeOut, content, click);
+  }
+}
+
+class InfoNotice extends InfoPiece{
+  constructor(content, click){
+    super("green", "white", info_config.fontSize, info_config.width_percent, info_config.padding, info_config.borderRadius, info_config.marginBottom, info_config.timeOut, content, click);
+  }
+}
+
+class Info{
+  constructor(){
+    if(Info._instance)return Info._instance;
+    this.info = [];
+    this.el = document.createElement('div');
+    render_element({
+      position: 'fixed',
+      top: '0',
+      left: '0',
+      left: "15%",
+      width: '70%',
+      zIndex: '1000000',
+    }, this.el);
+    document.body.appendChild(this.el);
+    this.addInfo = this.addInfo.bind(this);
+    this.popInfo = this.popInfo.bind(this);
+    this.removeInfo = this.removeInfo.bind(this);
+    Info._instance = this;
+  }
+
+  addInfo(category, content, callback=()=>{}){
+    switch(category){
+      case "warn":
+        this.info.push(new InfoWarn(content, callback));
+      break;
+
+      case "error":
+        this.info.push(new InfoError(content, callback));
+      break;
+
+      case "message":
+        this.info.push(new InfoMessage(content, callback));
+      break;
+
+      case "notice":
+        this.info.push(new InfoNotice(content, callback));
+      break;
+    }
+    this.info[this.info.length - 1].becomeChildOf(this.el);
+  }
+
+  popInfo(ind=null){
+    var info = this.info.splice(ind == null ? this.info.length - 1 : ind, 1)[0];
+    info.fade_out();
+    setTimeout(()=>{
+      info.removeChildFrom();
+    }, 400);
+  }
+
+  removeInfo(info){
+    this.popInfo(this.info.indexOf(info));
+  }
 }
 
 
@@ -1739,6 +2029,32 @@ class Period {
   }
 }
 
+/* dblclick differ click 
+takes two functions as param and one element 
+to bind the event listener on
+*/
+function cdblclick(click, dblClick, el) {
+  let clickedTimes = 0;
+  const incrementClick = () => {
+    clickedTimes++;
+  };
+  const reset = () => {
+    clickedTimes = 0;
+  };
+  el.addEventListener('click', () => {
+    incrementClick();
+    setTimeout(() => {
+      if (clickedTimes === 1) {
+        click();
+      } else if (clickedTimes >= 2) {
+        dblClick();
+      }
+      reset();
+    }, 300);
+  });
+}
+
+
 /* All Courses
 VisualArts
 Physics
@@ -1768,6 +2084,7 @@ class Subject {
     name,
     course,
     teacher,
+    zoomlink, 
     r,
     g,
     b,
@@ -1779,6 +2096,10 @@ class Subject {
     this.name = name;
     this.course = course;
     this.teacher = teacher;
+    this.zoomlink = zoomlink;
+    try{
+      this.id = new Config().course[name].id;
+    }catch(e){}
     this.rgba = new RGBA(r, g, b);
 
     this.duration = new Period(this.start, this.finish);
@@ -1815,7 +2136,7 @@ class Subject {
       height: '100%',
       borderRadius: '20px',
       zIndex: '-100',
-      opacity: '0.5',
+      opacity: '0.3',
     };
 
     this.card_content_style = {
@@ -1899,7 +2220,6 @@ class Subject {
     this.concat = this.concat.bind(this);
     this.moveCard = this.moveCard.bind(this);
 
-    this.enable_click = this.enable_click.bind(this);
     this.config = this.config.bind(this);
 
     /* this.host.host.host -> Manage
@@ -1909,6 +2229,23 @@ class Subject {
     	[this.vruler_start, this.vruler_finish]
     	[this.showStripe, this.hideStripe]
     */
+
+    /*
+    click and double click
+    click to zoomlink
+    double click to courselink
+    */
+    cdblclick(
+      function(){
+        window.open(this.zoomlink);
+      }.bind(this), // click
+      function(e){
+        if(!this.id)return;
+        let courselink = new CourseLink(this.id, 'id');
+        window.open(courselink.course);
+      }.bind(this), // dblclick
+      this.card_el,
+    );
   }
 
   shift_min(min) {
@@ -1982,6 +2319,7 @@ class Subject {
       this.name,
       this.course,
       this.teacher,
+      this.zoomlink,
       this.r,
       this.g,
       this.b,
@@ -1990,21 +2328,6 @@ class Subject {
 
   setSecIndex(ind) {
     this.sec_index = ind;
-  }
-
-  enable_click(){
-    this.card_el.oneEventListener('click', function(){
-      console.log('cl');
-      panelmain.show();
-      panelmain.config(
-        this, // subject
-        new Period(this.start, this.finish), // period,
-        this.name, // name,
-        this.course, // course,
-        this.teacher, // teacher,
-      );
-      panelmain.info_view();
-    }.bind(this));
   }
 
   // shit
@@ -2061,7 +2384,6 @@ class Path {
   }
 }
 
-
 class CourseLink {
   constructor(val, prop) {
     switch (prop) {
@@ -2094,38 +2416,10 @@ class CourseLink {
   }
 }
 
-class ZoomLink {
-  constructor(url) {
-    if(url == null){
-      this.url = null;
-      this.id = null;
-    }else{
-      this.url = url;
-      this.id = url.split('/').pop().split('?').shift();
-    }
-
-    this.is_null = this.is_null.bind(this);
-  }
-
-  is_null(){
-    return this.url == null;
-  }
-
-  static wrap(zoomlinks) {
-    /* {id: url} */
-    var res = {};
-    zoomlinks.forEach(zk => {
-      res[zk.id] = zk.url;
-    });
-    return res;
-  }
-}
 
 class Agenda {
   constructor(obj) {
     this.obj = obj;
-    // this.arr = this.obj[2].map(ar=>ar[1].map(br=>{return {[br[0]]: br[3]}}));
-    // console.log(this.arr);
 
     this.arr = [];
     this.obj[2].forEach(ar => {
@@ -2144,7 +2438,6 @@ class Agenda {
     this.removals = [];
     this.arr.forEach((obj, ii) => {
       try {
-        obj.zoomlink = new ZoomLink(obj.description.split('\n')[5].substring(4));
         var startdate = new Date(obj.dtstart);
         var enddate = new Date(obj.dtend);
         obj.period = new Period(
@@ -2168,7 +2461,7 @@ class Agenda {
         delete obj.summary;
 
         for (let jj = 0; jj < ii; jj++) {
-          if (obj.desc === this.arr[jj].desc && obj.name === this.arr[jj].name && obj.period.eq(this.arr[jj].period) && this.zoomlink.id === this.arr[jj].zoomlink.id) {
+          if (obj.desc === this.arr[jj].desc && obj.name === this.arr[jj].name && obj.period.eq(this.arr[jj].period)) {
             this.removals.push(jj);
             continue;
           }
@@ -2199,45 +2492,6 @@ class Database {
 
     // load entire calendar
     this.calendar_path = this.abs_path.forward('calendar');
-    fetch(this.calendar_path.forward('icalexport.ics').url())
-      .then(res => res.text())
-      .then(agenda => {
-        this.agenda = new Agenda(ICAL.parse(agenda));
-        /* course
-        {
-          course: {
-            img: str,
-            teachers: array,
-          }
-        }
-        */
-        this.course = {};
-        this.agenda.arr.forEach(obj => {
-          this.course[obj.name] = {
-            teachers: [],
-          }
-        });
-        // /* timeline
-        // [7:00, 8:00],
-        // [9:00, 10:00]
-        // */
-        // this.timeline = [];
-        // this.agenda.arr.forEach(ar=>{
-        // 	var pd = ar.period;
-        // 	var na = false;
-        // 	this.timeline.forEach(ed=>{
-        // 		if(pd.parse() === ed.parse()){
-        // 			na = true;
-        // 		}
-        // 	});
-        // 	if(!na){
-        // 		this.timeline.push(pd);
-        // 	}
-        // });
-
-        /* zoomlink */
-        this.zoomlink = ZoomLink.wrap(this.agenda.arr.map(ar => ar.zoomlink));
-      });
     // load user course
     fetch(this.db_path.forward('calendar.json').url())
       .then(res => res.json())
@@ -2280,13 +2534,9 @@ class Config extends Database {
         }
         */
         setTimeout(() => {
+          this.course = {};
           for (const [kk, vv] of Object.entries(course)) {
-            if (this.course[kk]) {
-              this.course[kk].teachers += vv.teachers;
-              this.course[kk].img = vv.img;
-            } else {
-              this.course[kk] = vv;
-            }
+            this.course[kk] = vv;
           }
           var delkeys = [];
           for (const [kk, vv] of Object.entries(this.course)) {
@@ -2298,11 +2548,6 @@ class Config extends Database {
             delete this.course[kk];
           });
         }, 1000);
-      });
-    fetch(this.json_path.forward("id.json").url())
-      .then(res => res.json())
-      .then(id => {
-        this.id = id;
       });
     fetch(this.json_path.forward("timeline.json").url())
       .then(res => res.json())
@@ -3266,966 +3511,6 @@ class FrameVisual {
   }
 }
 
-
-// panel main 
-class PanelMain {
-  // applied Config, init after fetch
-  constructor(
-    // percentage
-    width,
-    height,
-    header_width,
-  ) {
-    this.width = width;
-    this.height = height;
-    this.header_width = header_width;
-
-    this.el = document.createElement('div');
-    render_element({
-      position: 'fixed',
-      zIndex: '10000',
-      left: (50 - this.width / 2).toString() + 'vw',
-      top: (50 - this.height / 2).toString() + 'vh',
-      width: this.width.toString() + 'vw',
-      height: this.height.toString() + 'vh',
-      transition: 'opacity 500ms ease-out',
-    }, this.el);
-    this.header_el = document.createElement('div');
-    render_element({
-      width: '100%',
-      height: this.header_width.toString() + '%',
-      border: '1px solid',
-      display: 'flex',
-      flexDirection: 'row',
-    }, this.header_el);
-    this.header_dismiss_btn = document.createElement('div');
-    this.header_dismiss_btn.setAttribute('class', 'panel-dismiss');
-    this.header_el.appendChild(this.header_dismiss_btn);
-    this.show = this.show.bind(this);
-    this.hide = this.hide.bind(this);
-    this.header_dismiss_btn.addEventListener('click', this.hide);
-
-    this.el.appendChild(this.header_el);
-
-    this.main_el = document.createElement('div');
-    render_element({
-      width: '100%',
-      height: (100 - this.header_width).toString() + '%',
-    }, this.main_el);
-    this.el.appendChild(this.main_el);
-
-    document.body.appendChild(this.el);
-
-    [
-      this.headerInfo,
-      // this.headerHomework,
-      this.headerEdit,
-      // this.headerComment,
-    ] = [
-      PanelMain.newHeader(this.header_el, 'Info', 'Red'),
-      // PanelMain.newHeader(this.header_el, 'Homework', 'blue'),
-      PanelMain.newHeader(this.header_el, 'Edit', 'green'),
-      // PanelMain.newHeader(this.header_el, 'Comment', 'orange'),
-    ];
-
-    new Depandable(
-      [this.headerInfo, this.headerEdit], // els
-      'click', // evt
-      function(el) {
-        render_element({
-          textDecoration: 'underline',
-          fontWeight: 'bold',
-        }, el);
-      }, // activate
-      function(el) {
-        render_element({
-          textDecoration: 'none',
-          fontWeight: 'normal',
-        }, el);
-      }, // dismiss 
-      this.headerInfo // el
-    )
-
-    /*
-    frame functions are set-up functions,
-    which should be called only once in contsructor
-    */
-    this.__info_frame();
-    this.__edit_frame();
-    // this.el.style.display = 'none';
-    // this.hide();
-    // this.info_view();
-
-    this.info_view = this.info_view.bind(this);
-    this.edit_view = this.edit_view.bind(this);
-
-    this.headerInfo.addEventListener('click', this.info_view);
-    this.headerEdit.addEventListener('click', this.edit_view);
-
-    this.config = this.config.bind(this);
-
-    this.visible = false;
-    this.el.style.display = 'none';
-    this.hide();
-  }
-
-  // pnconfig
-  config(
-    subject, 
-    period,
-    name,
-    course,
-    teacher,
-    zoomlink,
-  ) {
-    this.subject = subject;
-    this.period = period;
-    this.name = name;
-    this.course = course;
-    this.teacher = teacher;
-    this.zoomlink = new ZoomLink(zoomlink);
-    this.courselink = new CourseLink(
-      new Config().id[this.name],
-      'id',
-    );
-
-    if (this.visible) {
-      switch (this.view) {
-        case 'info':
-          this.view = 'config';
-          this.info_view();
-          break;
-
-        case 'edit':
-          this.view = 'config';
-          this.edit_view();
-          break;
-      }
-    }
-  }
-
-  hide() {
-    this.visible = false;
-    this.el.style.opacity = '0';
-    setTimeout(() => {
-      render_element({
-        left: '100vw',
-        top: '100vh',
-        display: 'none',
-      }, this.el);
-    }, 400);
-  }
-
-  show() {
-    this.visible = true;
-    render_element({
-      left: '25vw',
-      top: '25vh',
-      display: 'block',
-    }, this.el);
-    setTimeout(() => {
-      this.el.style.opacity = '1';
-    }, 0);
-    if (this.view === 'info') {
-      this.timebar.hide();
-      setTimeout(() => {
-        this.timebar.show();
-      }, 500);
-    }
-  }
-
-  static newHeader(
-    parent_el,
-    text,
-    color,
-  ) {
-    var header = document.createElement('div');
-    render_element({
-      height: '100%',
-      background: color,
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      borderRadius: '5% 50% 0 0',
-      color: 'white',
-      fontSize: '1.5em',
-      padding: '0 15px 0 15px',
-      cursor: 'pointer',
-    }, header);
-    header.innerHTML = text;
-
-    header.addEventListener('mouseenter', function() {
-      render_element({
-        opacity: '0.8',
-      }, header);
-    });
-    header.addEventListener('mouseleave', function() {
-      render_element({
-        opacity: '1',
-      }, header);
-    });
-    parent_el.appendChild(header);
-    return header;
-  }
-
-  // info
-  __info_frame() {
-    this.info_el = document.createElement('div');
-    this.main_el.appendChild(this.info_el);
-    render_element({
-      width: '100%',
-      height: '100%',
-      overflow: 'auto',
-    }, this.info_el);
-    this.info_header = document.createElement('div');
-    render_element({
-      width: '100%',
-      height: '80px',
-      display: 'flex',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      border: '1px solid',
-    }, this.info_header);
-    this.info_el.appendChild(this.info_header);
-
-    this.info_name = document.createElement('div');
-    render_element({
-      fontFamily: 'Arial',
-      fontStyle: 'italic',
-      textDecoration: 'underline',
-      fontSize: '1.5em',
-      marginLeft: '20px',
-    }, this.info_name);
-    this.info_header.appendChild(this.info_name)
-
-    this.info_course = document.createElement('div');
-    render_element({
-      fontSize: '1.2em',
-    }, this.info_course);
-    this.info_header.appendChild(this.info_course);
-
-    this.info_btn_sec = document.createElement('div');
-    this.info_btn_sec.setAttribute('id', 'info-btn-sec');
-    render_element({
-      width: '100%',
-      height: 'calc(100% - 130px)',
-    }, this.info_btn_sec);
-    this.info_el.appendChild(this.info_btn_sec);
-
-    [
-      this.info_btn_course,
-      this.info_btn_zoom,
-      this.info_btn_calendar,
-    ] = ['course', 'zoom', 'calendar'].map((str, ii) => {
-      var a_el = document.createElement('a');
-      this.info_btn_sec.appendChild(a_el);
-      a_el.setAttribute('id', 'info-btn-' + str);
-      a_el.setAttribute('class', 'square-button');
-      a_el.setAttribute('href', '#');
-      a_el.setAttribute('title', str);
-      render_element({
-        padding: '15px 40px',
-        border: '3px solid #000',
-      }, a_el);
-      a_el.innerHTML = str;
-      var rect = a_el.getBoundingClientRect();
-      var editidth = rit(rect.width) / 2;
-      var hheight = rit(rect.height / 2);
-      render_element({
-        left: `calc(50% - ${editidth}px)`,
-        top: `calc(${ii * 33}% + 5px)`,
-        padding: '0',
-        border: '0',
-      }, a_el);
-      a_el.innerHTML = '';
-      return proxy(a_el);
-    });
-
-    this.info_btn_zoom.oneEventListener('click', function() {
-      window.open(this.zoomlink.url);
-    }.bind(this));
-
-    this.info_btn_course.oneEventListener('click', function() {
-      window.open(this.courselink.course);
-    }.bind(this));
-
-    this.info_btn_calendar.oneEventListener('click', function() {
-      window.open(this.courselink.calendar);
-    }.bind(this));
-
-    this.info_time_sec = document.createElement('div');
-    render_element({
-      width: '100%',
-      height: '40px',
-    }, this.info_time_sec);
-    this.info_el.appendChild(this.info_time_sec);
-
-    this.timebar = new TimeBar(
-      this.info_time_sec, // parent el
-      new Period(new Clock('11:00'), new Clock('12:00')), // period
-      1.2, // fontSize
-    );
-
-    this.main_el.innerHTML = '';
-  }
-
-  static info_sec(
-    parent_el,
-    child_el,
-    width,
-    height,
-  ) {
-    var sec = document.createElement('section');
-    sec.appendChild(child_el);
-    parent_el.appendChild(sec);
-    render_element({
-      width: width,
-      height: height,
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
-      border: '1px solid',
-    }, sec);
-    return sec;
-  }
-
-  info_view(){
-    if (this.view === 'info') return;
-    this.view = 'info';
-    this.main_el.innerHTML = '';
-    this.info_name.innerHTML = this.name;
-    this.info_course.innerHTML = this.course + '&nbsp;&nbsp;';
-    this.main_el.appendChild(this.info_el);
-    this.timebar.config(this.period);
-
-    // background image
-    var bg_name = new Config().course[this.name];
-    if(bg_name == null || bg_name.img == null){
-      this.bg_url = 'img/learn.jpg';
-    }else{
-      this.bg_url = 'img/' + bg_name.img;
-    }
-    if(this.img_el){
-      this.info_btn_sec.removeChild(this.img_el);
-    }
-    this.img_el = document.createElement('img');
-    this.img_el.setAttribute('src', this.bg_url);
-    render_element({
-      position: 'absolute',
-      width: '100%',
-      height: 'calc(' + (100 - this.header_width).toString() + '% - 130px)',
-      opacity: '0.5',
-      zIndex: '-100',
-    }, this.img_el);
-    this.info_btn_sec.appendChild(this.img_el);
-
-    // color
-    var rgb = new Config().theme.course[this.name];
-    if(rgb == null){
-      this.rgba = new RGBA(128, 128, 128);
-    }else{
-      this.rgba = new RGBA(rgb.r, rgb.g, rgb.b);
-    }
-    render_element({
-      background: this.rgba.rgb(200),
-      boxShadow: '10px 16px 8px ' + this.rgba.rgb(),
-    }, this.el);
-
-    // btn 
-    this.info_btn_zoom.oneEventListener('click', function() {
-      window.open(this.zoomlink.url);
-    }.bind(this));
-
-    this.info_btn_course.oneEventListener('click', function() {
-      window.open(this.courselink.course);
-    }.bind(this));
-
-    this.info_btn_calendar.oneEventListener('click', function() {
-      window.open(this.courselink.calendar);
-    }.bind(this));
-
-    setTimeout(() => {
-      this.timebar.show();
-    }, 250);
-  }
-
-  // edit
-  __edit_frame() {
-    this.edit_el = document.createElement('div');
-    this.main_el.appendChild(this.edit_el);
-    render_element({
-      width: '100%',
-      height: '100%',
-      overflow: 'auto',
-    }, this.edit_el);
-
-    this.edit_btn_sec = document.createElement('div');
-    render_element({
-      width: '100%',
-      height: '60px',
-      display: 'flex',
-      flexDirection: 'row',
-      justifyContent: 'space-around',
-      alignItems: 'center',
-      border: '1px solid',
-    }, this.edit_btn_sec);
-    this.edit_el.appendChild(this.edit_btn_sec);
-
-    var btn_config = {
-      width: 100,
-      height: 30,
-      fontSize: '1.2em',
-      color: 'white',
-      hovercolor: 'lightgray',
-    };
-
-    this.edit_save_btn = new SideButton(
-      btn_config.width,
-      btn_config.height,
-      btn_config.fontSize,
-      '<i class="far fa-save"></i>', // itag
-      'Save',
-      110, // r
-      120, // g
-      190, // b
-      btn_config.color,
-      btn_config.hovercolor,
-      function() {
-        // save
-        this.name = this.input_course_el.value;
-        this.teacher = this.input_teacher_el.value;
-        this.period = parsedToPeriod(this.input_period_el.value);
-        this.zoomid = this.input_zoomId_el.value;
-        this.zoomlink_autofill();
-        this.subject.config(
-          this.period,
-          this.name,
-          this.course,
-          this.teacher,
-          this.zoomlink,
-        );
-      }.bind(this),
-    );
-
-    this.edit_delete_btn = new SideButton(
-      btn_config.width,
-      btn_config.height,
-      btn_config.fontSize,
-      '<i class="fas fa-trash"></i>', // itag
-      'Delete',
-      225, // r
-      90, // g
-      150, // b
-      btn_config.color,
-      btn_config.hovercolor,
-      function(){
-        // delete
-      }.bind(this),
-    );
-
-    this.edit_clear_btn = new SideButton(
-      btn_config.width,
-      btn_config.height,
-      btn_config.fontSize,
-      '<i class="fas fa-hand-sparkles"></i>', // itag
-      'Clear',
-      40, // r
-      185, // g
-      40, // b
-      btn_config.color,
-      btn_config.hovercolor,
-      function(){
-        // clear
-        this.input_course_el.value = "";
-        this.input_teacher_el.value = "";
-        this.input_period_el.value = "";
-        this.input_zoomId_el.value = "";
-        this.input_zoomLink_el.value = "";
-        this.input_courseId_el.value = "";
-        this.input_courseLink_el.value = "";
-        this.input_calendarLink_el.value = "";
-      }.bind(this),
-    );
-
-    this.edit_save_btn.becomeChildOf(this.edit_btn_sec);
-    this.edit_delete_btn.becomeChildOf(this.edit_btn_sec);
-    this.edit_clear_btn.becomeChildOf(this.edit_btn_sec);
-
-    // checkbox
-    this.autofill_checkbox = new CheckboxNormal(
-      'autofill',
-      100,
-      30,
-      '1.2em',
-      '20px',
-      'red',
-      'lightgray',
-      'darkgray',
-      true,
-    );
-
-    this.autofill_checkbox.becomeChildOf(this.edit_btn_sec);
-
-    // input course
-    this.input_course = document.createElement('div');
-    render_element({
-      width: '100%',
-      height: '25%',
-      border: '1px solid',
-      display: 'flex',
-      flexDirection: 'row',
-      justifyContent: 'center',
-      alignItems: 'center',
-    }, this.input_course);
-    this.edit_el.appendChild(this.input_course);
-
-    this.input_course_label = new LabelNormal(
-      this.input_course, // parent_el
-      'course',
-      '1.2em', // fontSize
-      '100px', // width
-      '40px', // height
-      '0', // borderRadius
-      '20px', // marginRight
-      '#618685', // color
-      '#fefbd8', // hovercolor
-      '#d5f4e6', // bg
-      '#80ced6', // hoverbg
-    );
-
-    this.input_course_el = new InputSearch(
-      this,
-      this.input_course,
-      220,
-      '1.2em', {
-        border: '1px solid',
-      },
-      Object.keys(new Config().course), {
-        fontSize: '1.2em',
-        display: 'flex',
-        alignItems: 'center',
-        paddingLeft: '5px',
-        overflow: 'auto',
-      },
-    );
-
-    // input teacher
-    this.input_teacher = document.createElement('div');
-    render_element({
-      width: '100%',
-      height: '25%',
-      border: '1px solid',
-      display: 'flex',
-      flexDirection: 'row',
-      justifyContent: 'center',
-      alignItems: 'center',
-    }, this.input_teacher);
-    this.edit_el.appendChild(this.input_teacher);
-
-    this.input_teacher_label = new LabelNormal(
-      this.input_teacher, // parent_el
-      'teacher',
-      '1.2em', // fontSize
-      '120px', // width
-      '40px', // height
-      '0', // borderRadius
-      '20px', // marginRight
-      '#f4e1d2', // color
-      '#b2b2b2', // hovercolor
-      '#f18973', // bg
-      '#f7cac9', // hoverbg
-    );
-
-    this.input_teacher_el = new InputSearch(
-      this,
-      this.input_teacher,
-      220,
-      '1.2em', {
-        border: '1px solid',
-      },
-      [], {
-        fontSize: '1.2em',
-        display: 'flex',
-        alignItems: 'center',
-        paddingLeft: '5px',
-        overflow: 'auto',
-      },
-      function() {
-        var di = new Config().course[this.input_course_el.value];
-        if (di == null) return;
-        this.input_teacher_el.config(di.teachers.split(','));
-      }.bind(this),
-    );
-
-    // input period
-    this.input_period = document.createElement('div');
-    render_element({
-      width: '100%',
-      height: '25%',
-      border: '1px solid',
-      display: 'flex',
-      flexDirection: 'row',
-      justifyContent: 'center',
-      alignItems: 'center',
-    }, this.input_period);
-    this.edit_el.appendChild(this.input_period);
-
-    this.input_period_label = new LabelNormal(
-      this.input_period, // parent_el
-      'period',
-      '1.2em', // fontSize
-      '100px', // width
-      '40px', // height
-      '0', // borderRadius
-      '20px', // marginRight
-      '#e3eaa7', // color
-      '#c1946a', // hovercolor
-      '#86af49', // bg
-      '#b5e7a0', // hoverbg
-    );
-
-    this.input_period_el = new InputSearch(
-      this,
-      this.input_period,
-      220,
-      '1.2em', {
-        border: '1px solid',
-      },
-      [], {
-        fontSize: '1.2em',
-        display: 'flex',
-        alignItems: 'center',
-        paddingLeft: '5px',
-        overflow: 'auto',
-      },
-      function() {
-        var arr = Agenda.filterByName(new Config().agenda.arr, this.input_course_el.value);
-        if (arr.length === 0) {
-          arr = new Config().timeline;
-        } else {
-          arr = arr.map(ar => ar.period);
-        }
-        this.input_period_el.config(Period.sort(arr).map(ar => ar.parse()));
-      }.bind(this),
-    );
-
-    // input zoom id
-    this.input_zoomId = document.createElement('div');
-    render_element({
-      width: '100%',
-      height: '25%',
-      border: '1px solid',
-      display: 'flex',
-      flexDirection: 'row',
-      justifyContent: 'center',
-      alignItems: 'center',
-    }, this.input_zoomId);
-    this.edit_el.appendChild(this.input_zoomId);
-
-    this.input_zoomId_label = new LabelNormal(
-      this.input_zoomId, // parent_el
-      'zoom id',
-      '1.2em', // fontSize
-      '150px', // width
-      '40px', // height
-      '0', // borderRadius
-      '20px', // marginRight
-      '#EFEFEF', // color
-      '#37371F', // hovercolor
-      '#EA9010', // bg
-      '#EAEFBD', // hoverbg
-    );
-
-    this.zoomlink_autofill = this.zoomlink_autofill.bind(this);
-    this.zoomid_autofill = this.zoomid_autofill.bind(this);
-
-    this.input_zoomId_el = new InputSearch(
-      this,
-      this.input_zoomId,
-      220,
-      '1.2em', {
-        border: '1px solid',
-      },
-      [], {
-        fontSize: '1.2em',
-        display: 'flex',
-        alignItems: 'center',
-        paddingLeft: '5px',
-        overflow: 'auto',
-      },
-      function() {
-        var arr = new Config().agenda.arr.concat();
-        var course = validateInput(this.input_course_el);
-        var period = validateInput(this.input_period_el);
-        if (course) {
-          arr = Agenda.filterByName(arr, course);
-        }
-        if (period) {
-          arr = Agenda.filterByPeriod(arr, parsedToPeriod(period));
-        }
-        this.input_zoomId_el.config(new Config().zoomlink);
-        this.zoomid_autofill();
-      }.bind(this),
-      this.zoomlink_autofill,
-    );
-
-    // input zoom link
-    this.input_zoomLink = document.createElement('div');
-    render_element({
-      width: '100%',
-      height: '25%',
-      border: '1px solid',
-      display: 'flex',
-      flexDirection: 'row',
-      justifyContent: 'center',
-      alignItems: 'center',
-    }, this.input_zoomLink);
-    this.edit_el.appendChild(this.input_zoomLink);
-
-    this.input_zoomLink_label = new LabelNormal(
-      this.input_zoomLink, // parent_el
-      'zoom link',
-      '1.2em', // fontSize
-      '150px', // width
-      '40px', // height
-      '0', // borderRadius
-      '20px', // marginRight
-      '#0D2818', // color
-      '#fff', // hovercolor
-      '#16DB65', // bg
-      '#058C42', // hoverbg
-    );
-
-    this.input_zoomLink_el = new InputSearch(
-      this,
-      this.input_zoomLink,
-      220,
-      '1.2em', {
-        border: '1px solid',
-      },
-      [], {
-        fontSize: '1.2em',
-        display: 'flex',
-        alignItems: 'center',
-        paddingLeft: '5px',
-        overflow: 'auto',
-      },
-      this.zoomlink_autofill,
-      this.zoomid_autofill,
-    );
-
-    this.courseid_blur = this.courseid_blur.bind(this);
-    this.courselink_blur = this.courselink_blur.bind(this);
-    this.calendarlink_blur = this.calendarlink_blur.bind(this);
-    this.render_courselink = this.render_courselink.bind(this);
-
-    // input course id
-    this.input_courseId = document.createElement('div');
-    render_element({
-      width: '100%',
-      height: '25%',
-      border: '1px solid',
-      display: 'flex',
-      flexDirection: 'row',
-      justifyContent: 'center',
-      alignItems: 'center',
-    }, this.input_courseId);
-    this.edit_el.appendChild(this.input_courseId);
-
-    this.input_courseId_label = new LabelNormal(
-      this.input_courseId, // parent_el
-      'course id',
-      '1.2em', // fontSize
-      '150px', // width
-      '40px', // height
-      '0', // borderRadius
-      '20px', // marginRight
-      '#fff', // color
-      '#eee', // hovercolor
-      '#6666ff', // bg
-      '#6699ff', // hoverbg
-    );
-
-    this.input_courseId_el = new InputSearch(
-      this,
-      this.input_courseId,
-      220,
-      '1.2em', {
-        border: '1px solid',
-      },
-      [], {
-        fontSize: '1.2em',
-        display: 'flex',
-        alignItems: 'center',
-        paddingLeft: '5px',
-        overflow: 'auto',
-      },
-      () => {},
-      this.courseid_blur,
-    );
-
-    // input course link
-    this.input_courseLink = document.createElement('div');
-    render_element({
-      width: '100%',
-      height: '25%',
-      border: '1px solid',
-      display: 'flex',
-      flexDirection: 'row',
-      justifyContent: 'center',
-      alignItems: 'center',
-    }, this.input_courseLink);
-    this.edit_el.appendChild(this.input_courseLink);
-
-    this.input_courseLink_label = new LabelNormal(
-      this.input_courseLink, // parent_el
-      'course link',
-      '1.2em', // fontSize
-      '150px', // width
-      '40px', // height
-      '0', // borderRadius
-      '20px', // marginRight
-      '#ABE2BA', // color
-      '#eee', // hovercolor
-      '#e74c3c', // bg
-      '#a41909', // hoverbg
-    );
-
-    this.input_courseLink_el = new InputSearch(
-      this,
-      this.input_courseLink,
-      220,
-      '1.2em', {
-        border: '1px solid',
-      },
-      [], {
-        fontSize: '1.2em',
-        display: 'flex',
-        alignItems: 'center',
-        paddingLeft: '5px',
-        overflow: 'auto',
-      },
-      () => {},
-      this.courselink_blur,
-    );
-
-    // input calendar link
-    this.input_calendarLink = document.createElement('div');
-    render_element({
-      width: '100%',
-      height: '25%',
-      border: '1px solid',
-      display: 'flex',
-      flexDirection: 'row',
-      justifyContent: 'center',
-      alignItems: 'center',
-    }, this.input_calendarLink);
-    this.edit_el.appendChild(this.input_calendarLink);
-
-    this.input_courseLink_label = new LabelNormal(
-      this.input_calendarLink, // parent_el
-      'calendar link',
-      '1.2em', // fontSize
-      '180px', // width
-      '40px', // height
-      '0', // borderRadius
-      '20px', // marginRight
-      '#fff', // color
-      '#eee', // hovercolor
-      '#ffcc00', // bg
-      '#806600', // hoverbg
-    );
-
-    this.input_calendarLink_el = new InputSearch(
-      this,
-      this.input_calendarLink,
-      220,
-      '1.2em', {
-        border: '1px solid',
-      },
-      [], {
-        fontSize: '1.2em',
-        display: 'flex',
-        alignItems: 'center',
-        paddingLeft: '5px',
-        overflow: 'auto',
-      },
-      () => {},
-      this.calendarlink_blur,
-    );
-
-    this.main_el.innerHTML = '';
-  }
-
-  zoomlink_autofill() {
-    var id = this.input_zoomId_el.el.value;
-    if (id != null && id.trim().length > 1) {
-      id = id.trim();
-      var zoomlink = new Config().zoomlink[id];
-      if (zoomlink == null) {
-        zoomlink = "https://studygroup.zoom.us/j/" + id;
-      }
-      this.input_zoomLink_el.value = zoomlink;
-      this.zoomlink = new ZoomLink(zoomlink);
-    }
-  }
-
-  zoomid_autofill() {
-    var link = this.input_zoomLink_el.el.value;
-    if (link != null && link.trim().length > 1) {
-      link = link.trim();
-      try {
-        this.zoomlink = new ZoomLink(link);
-        this.input_zoomId_el.value = this.zoomlink.id;
-      } catch (e) {
-        return
-      }
-    }
-  }
-
-  courseid_blur() {
-    this.courselink = new CourseLink(this.input_courseId_el.value, 'id');
-    this.render_courselink();
-  }
-
-  courselink_blur() {
-    this.courselink = new CourseLink(this.input_courseLink_el.value, 'course');
-    this.render_courselink();
-  }
-
-  calendarlink_blur() {
-    this.courselink = new CourseLink(this.input_calendarLink_el.value, 'calendar');
-    this.render_courselink();
-  }
-
-  render_courselink() {
-    if (!this.courselink.is_null()) {
-      this.input_courseId_el.value = this.courselink.id;
-      this.input_courseLink_el.value = this.courselink.course;
-      this.input_calendarLink_el.value = this.courselink.calendar;
-    }
-  }
-
-  edit_view() {
-    if (this.view === 'edit') return;
-    this.view = 'edit';
-    this.main_el.innerHTML = '';
-    this.input_course_el.value = this.name;
-    this.input_teacher_el.value = this.teacher;
-    this.input_period_el.value = this.period.parse();
-
-    if(!this.zoomlink.is_null()){
-      this.input_zoomId_el.value = this.zoomlink.id;
-      this.zoomlink_autofill();
-    }
-
-    this.render_courselink();
-
-    this.main_el.appendChild(this.edit_el);
-  }
-}
-
-
 class Workday {
   constructor(
     host,
@@ -4237,8 +3522,7 @@ class Workday {
     this.day = day;
     this.parent_el = proxy(this.host.host.main_el);
     this.sec_els = sec_els;
-    this.course_objs = course_objs;
-
+    this.course_objs = course_objs;  
     this.subjects = this.course_objs.map(obj => new Subject(
       this,
       new Config().course[obj.name].img,
@@ -4247,9 +3531,8 @@ class Workday {
       obj.name,
       obj.course,
       obj.teacher,
-      new Config().theme.course[obj.name].r,
-      new Config().theme.course[obj.name].g,
-      new Config().theme.course[obj.name].b,
+      obj.zoomlink,
+      ...new Theme().get('subject', obj.name)
     ));
     this.subjects.forEach((sub, ii) => {
       sub.becomeChildOf(this.sec_els[ii]);
@@ -4409,108 +3692,8 @@ class Workweek {
   }
 }
 
-
-class Menu {
-  /* tb-footer 
-  static view
-  	edit 
-  	homework
-  edit view
-  	add course
-  	copy all to another day
-  focus view
-  	timeline 
-  	remove
-  */
-  constructor(
-    parent_el,
-  ) {
-    this.parent_el = parent_el;
-    this.frame_static = new FrameVisual();
-    this.frame_edit = new FrameVisual();
-    this.frame_focus = new FrameVisual();
-    this.frame_static.becomeChildOf(this.parent_el);
-    this.frame_edit.becomeChildOf(this.parent_el);
-    this.frame_focus.becomeChildOf(this.parent_el);
-
-    this.btn_assignment = new SideButton(
-      250, // width 
-      50, // height
-      '2em', // fontSize
-      '<i class="far fa-edit"></i>', // itag
-      'Assignment',
-      120, // r
-      130, // g
-      0, // b
-      'white',
-      'lightgray',
-      () => {
-        console.log('assignment btn clicked')
-      },
-    );
-    this.btn_homework = new SideButton(
-      250, // width 
-      50, // height
-      '2em', // fontSize
-      '<i class="fas fa-tasks"></i>', // itag
-      'Homework',
-      0, // r
-      130, // g
-      210, // b
-      'white',
-      'lightgray',
-      () => {
-        console.log('homework btn clicked')
-      },
-    );
-    this.btn_exam = new SideButton(
-      250, // width 
-      50, // height
-      '2em', // fontSize
-      '<i class="fas fa-user-graduate"></i>', // itag
-      'Exam',
-      130, // r
-      0, // g
-      210, // b
-      'white',
-      'lightgray',
-      () => {
-        console.log('exam btn clicked')
-      },
-    );
-    this.frame_static.appendChild(this.btn_assignment.el);
-    this.frame_static.appendChild(this.btn_homework.el);
-    this.frame_static.appendChild(this.btn_exam.el);
-    this.view_static = this.view_static.bind(this);
-  }
-
-  view_static() {
-    // edit
-    // homework
-    setTimeout(() => {
-      this.frame_static.show();
-    }, 500);
-  }
-}
-
-
-// menu
-const menu = new Menu(
-  document.querySelector('#menu'),
-);
-
-setTimeout(() => {
-  menu.view_static()  // edit homework
-}, 2500)
-// setTimeout(()=>{menu.view_static()}, 2500)
-// setTimeout(()=>{menu.view_focus()}, 2500)
-
-
-
 // grid manage
 var manage;
-// panel main
-var panelmain;
 
 superior.addAfter(() => {
   manage = new Manage(
@@ -4523,58 +3706,7 @@ superior.addAfter(() => {
   );
   manage.startTimer(sydTime);
   document.querySelector('.timetable-wrapper').style.opacity = '1';
-
-  panelmain = new PanelMain(
-    50, // width
-    50, // height
-    10, // panel height
-  );
-  manage.workweek.workday.subjects.forEach(sub=>{
-    sub.enable_click();
-  });
 }, 0);
-
-
-// superior.addAfter(() => {
-//   console.log('then');
-  // panelmain.config(
-  //   new Period(new Clock("14:00"), new Clock("15:00")),
-  //   "USFP English A",
-  //   "21.SEA4/5",
-  //   "Freda Pappas",
-  //   new ZoomLink("https://studygroup.zoom.us/j/96653377807?pwd=U050aUdvK3lOUWx5MkttMUtIWkJxZz09"),
-  // );
-
-//   setTimeout(()=>{
-//     panelmain.config(
-//       new Period(new Clock("16:00"), new Clock("17:00")),
-//       "USFP Mathematics for Science A",
-//       "21.MSA9/10",
-//       "Colin Baker",
-//       new ZoomLink("https://studygroup.zoom.us/j/92673619214?pwd=Rjc4Tm9XbWZwVGJsU0I4Y01PbTBSQT09"),
-//     );
-//   }, 5000);
-
-  // panelmain.info_view();
-
-  // document.querySelector('#btn1').addEventListener('click', ()=>{
-  //   if(!pm.visible){
-  //     pm.show();
-  //   }else{
-  //     pm.hide();
-  //   }
-  // });
-  // document.querySelector('#btn2').addEventListener('click', ()=>{
-  //   pm.config(
-  //     new Period(new Clock("16:00"), new Clock("17:00")),
-  //     "USFP Mathematics for Science A",
-  //     "21.MSA9/10",
-  //     "Colin Baker",
-  //     new ZoomLink("https://studygroup.zoom.us/j/92673619214?pwd=Rjc4Tm9XbWZwVGJsU0I4Y01PbTBSQT09"),
-  //   );
-  // });
-// }, 0);
-
 
 superior.addBeforeGap(2000);
 superior.run();
